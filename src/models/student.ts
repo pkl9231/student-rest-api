@@ -12,7 +12,7 @@ const studentSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    // unique: [true, "email id already present"],
+    unique: true,
     validate(value: any) {
       if (!validator.isEmail(value)) {
         throw new Error("Email is invalid");
@@ -21,6 +21,7 @@ const studentSchema = new mongoose.Schema({
   },
   mobile: {
     type: String,
+    unique: true,
     required: true,
     min: 10,
   },
