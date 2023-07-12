@@ -12,7 +12,10 @@ export const authentication = (salt: string, password: string): string => {
 export const random = () => crypto.randomBytes(128).toString("base64");
 
 export const helper = {
-  messageResponse: ( statusCode: number, messageResponse: string, data: [], count: number ) => {
-    return [{ statusCode }, { messageResponse }, { data }, { count }];
+  successMessageResponse: ( statusCode: number, messageResponse: string, data: any, count: number ) => {
+    return [ { statusCode ,  messageResponse , count, data  } ];
+  },
+  errorMessageResponse: ( statusCode: number, error: any ) => {
+    return [{ statusCode , error }];
   },
 };
