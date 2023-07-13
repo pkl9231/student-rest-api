@@ -5,8 +5,9 @@ import {
   saveStudentRecords,
   getSingleStudentRecords,
   updateStudentRecords,
-  deleteStudentRecords
+  deleteStudentRecords,
 } from "../controller";
+
 // import { isAuthenticated, isOwner } from '../middlewares';
 
 export default (router: express.Router) => {

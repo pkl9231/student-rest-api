@@ -1,4 +1,4 @@
-import { StudentModel } from "./student";
+import { StudentModel, UserModel } from "./student";
 import { StudentRequest } from "../data/studentsDataType";
 
 export const getStudents = async () => {
@@ -21,3 +21,6 @@ export const updateStudentById = async (_id: string, data: StudentRequest) => {
 export const deleteStudentById = async (id: string) => {
   return await StudentModel.findOneAndDelete({ _id: id })
 };
+
+export const createUser = (values: Record<string, any>) => new UserModel(values).save().then((user) => user.toObject());
+export const getUserByEmail = (email: string) => UserModel.findOne({ email });

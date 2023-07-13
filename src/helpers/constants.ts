@@ -16,5 +16,6 @@ export enum MessageResponse {
   SUCCESS = 'success',
   ERROR = 'error',
   MISSING_REQUIRED_FIELD = 'missing required field',
-  NO_CONTENT = 'no records'
+  NO_CONTENT = 'no records',
+  DATA_EXIST = 'data already exist',
 }
