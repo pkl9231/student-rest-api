@@ -9,6 +9,7 @@ import {
   deleteStudentById,
   getUserByEmail,
   createUser,
+  deleteUser
 } from "../models/models";
 import { authentication, random } from "../helpers";
 
@@ -172,7 +173,8 @@ export const getSingleStudentRecords = async (req: express.Request, res: express
 export const deleteStudentRecords = async (req: express.Request, res: express.Response) => {
   try {
     const { id } = req.params;
-    const result = await deleteStudentById(id);
+    const data = await deleteUser(id);
+    const result = await deleteStudentById(data.email);
     const httpCode = result ? HttpStatusCode.ACCEPTED : HttpStatusCode.BAD_REQUEST;
     const messageResponse = result ? MessageResponse.SUCCESS : MessageResponse.NO_CONTENT;
     const response: any = helper.successMessageResponse(httpCode, messageResponse, result );

@@ -18,10 +18,14 @@ export const updateStudentById = async (_id: string, data: StudentRequest) => {
   return await StudentModel.findByIdAndUpdate(_id, data, {new: true,});
 };
 
-export const deleteStudentById = async (id: string) => {
-  return await StudentModel.findOneAndDelete({ _id: id })
+export const deleteStudentById = async (email: string) => {
+  return await StudentModel.findOneAndDelete({ email: email })
 };
 
 export const createUser = (values: Record<string, any>) => new UserModel(values).save().then((user) => user.toObject());
 export const getUserByEmail = (email: string) => UserModel.findOne({ email });
 export const getUserBySessionToken = (sessionToken: string) => UserModel.findOne({ 'authentication.sessionToken': sessionToken });
+
+export const deleteUser = async (id: string) => {
+  return await UserModel.findOneAndDelete({ _id: id })
+};
