@@ -1,17 +1,26 @@
 import express from 'express';
 import { HttpStatusCode, MessageResponse } from "../helpers/constants";
 import { helper } from "../helpers";
-import { getStudents, createStudent, getStudentById, updateStudentById, deleteStudentById } from '../models/models';
+import {
+  getStudents,
+  createStudent,
+  getStudentById,
+  updateStudentById,
+  deleteStudentById,
+  getUserByEmail,
+  createUser,
+} from "../models/models";
+import { authentication, random } from "../helpers";
 
 /**
  * this function is use to save student records
  * @param req.body 
  * @returns
  */
-export const saveStudentRecords  = async (req: express.Request, res: express.Response) => {
+export const studentRegistration  = async (req: express.Request, res: express.Response) => {
   try {
     const errorResponse = [];
-    const { name, className, rollNumber, fathersName, mobile, dateOfAdmission, email } = req?.body;
+    const { name, className, rollNumber, fathersName, mobile, dateOfAdmission, email, password } = req?.body;
     if (!name) {
       errorResponse.push({
         errorMessage: MessageResponse.MISSING_REQUIRED_FIELD,
@@ -47,6 +56,13 @@ export const saveStudentRecords  = async (req: express.Request, res: express.Res
       });
     }
 
+    if (!password) {
+      errorResponse.push({
+        errorMessage: MessageResponse.MISSING_REQUIRED_FIELD,
+        attributeName: "password",
+      });
+    }
+
     if (errorResponse?.length) {
       res
         .status(HttpStatusCode.BAD_REQUEST)
@@ -55,8 +71,30 @@ export const saveStudentRecords  = async (req: express.Request, res: express.Res
         );
       return;
     }
-    const studentRecords = await createStudent(req?.body)
+    const studentRecords = await createStudent(req?.body);
+    const existingStudent = await getUserByEmail(email);
+
+    if (existingStudent) {
+      errorResponse.push({
+        errorMessage: MessageResponse.DATA_EXIST,
+        attributeName: "",
+      });
+      res
+        .status(HttpStatusCode.BAD_REQUEST)
+        .send(
+          helper.errorMessageResponse(HttpStatusCode.BAD_REQUEST, errorResponse)
+        );
+      return;
+    }
+
     res.status(HttpStatusCode.CREATED).send(studentRecords);
+    const salt = random();
+    const user = await createUser({email, name,
+      authentication: {
+        salt,
+        password: authentication(salt, password),
+      },
+    });
     return;
   } catch (error) {
     const response = helper.errorMessageResponse(HttpStatusCode.BAD_REQUEST, error);
@@ -139,9 +177,87 @@ export const deleteStudentRecords = async (req: express.Request, res: express.Re
     const messageResponse = result ? MessageResponse.SUCCESS : MessageResponse.NO_CONTENT;
     const response: any = helper.successMessageResponse(httpCode, messageResponse, result );
     res.status(httpCode).send(response);
+    return;
   } catch (error) {
     const response = helper.errorMessageResponse(HttpStatusCode.BAD_REQUEST, error);
     res.status(HttpStatusCode.BAD_REQUEST).send(response);
     return;
   }
 }
+
+export const studentLogin = async (req: express.Request, res: express.Response) => {
+  try {
+    const { email, password } = req.body;
+    const errorResponse = [];
+
+    if (!email) {
+      errorResponse.push({
+        errorMessage: MessageResponse.MISSING_REQUIRED_FIELD,
+        attributeName: "email",
+      });
+    }
+
+    if (!password) {
+      errorResponse.push({
+        errorMessage: MessageResponse.MISSING_REQUIRED_FIELD,
+        attributeName: "password",
+      });
+    }
+
+    if (errorResponse?.length) {
+      res
+        .status(HttpStatusCode.BAD_REQUEST)
+        .send(
+          helper.errorMessageResponse(HttpStatusCode.BAD_REQUEST, errorResponse)
+        );
+      return;
+    }
+    const user = await getUserByEmail(email).select("+authentication.salt +authentication.password");
+
+    if (!user) {
+
+      errorResponse.push({
+        errorMessage: MessageResponse.NO_CONTENT,
+      });
+
+      res
+        .status(HttpStatusCode.BAD_REQUEST)
+        .send(
+          helper.errorMessageResponse(HttpStatusCode.BAD_REQUEST, errorResponse)
+        );
+      return;
+    }
+    const expectedHash = authentication(user.authentication.salt, password);
+
+    if (user.authentication.password != expectedHash) {
+      errorResponse.push({
+        errorMessage: MessageResponse.UNAUTHORIZED,
+      });
+
+      res
+        .status(HttpStatusCode.BAD_REQUEST)
+        .send(
+          helper.errorMessageResponse(HttpStatusCode.BAD_REQUEST, errorResponse)
+        );
+      return;
+    }
+    const salt = random();
+    user.authentication.sessionToken = authentication(
+      salt,
+      user._id.toString()
+    );
+    await user.save();
+    res.cookie("USER-AUTH", user.authentication.sessionToken, {
+      domain: "localhost",
+      path: "/",
+    });
+    const response: any = helper.successMessageResponse(HttpStatusCode.OK, MessageResponse.SUCCESS, user );
+    res.status(HttpStatusCode.OK).send(response);
+    return
+  } catch (error) {
+    console.log(error);
+    const response = helper.errorMessageResponse(HttpStatusCode.BAD_REQUEST, error);
+    res.status(HttpStatusCode.BAD_REQUEST).send(response);
+    return;
+  }
+};

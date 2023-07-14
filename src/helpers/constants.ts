@@ -18,4 +18,5 @@ export enum MessageResponse {
   MISSING_REQUIRED_FIELD = 'missing required field',
   NO_CONTENT = 'no records',
   DATA_EXIST = 'data already exist',
+  UNAUTHORIZED = 'user unauthorized'
 }
