@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import cors from 'cors';
 import router from './router';
-require("./db/connection");
+require("../src/db/connection");
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -26,3 +26,5 @@ server.listen(port, () => {
 });
 
 app.use('/', router());
+
+export default app; // for testing

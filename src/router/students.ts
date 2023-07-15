@@ -14,10 +14,10 @@ import { isAuthenticated, isOwner } from '../middleware';
 export default (router: express.Router) => {
   try {
     router.post("/student", studentRegistration);
-    router.get("/student", isAuthenticated, getStudentsRecords);
-    router.get("/student/:id", isAuthenticated, isOwner, getSingleStudentRecords);
-    router.patch("/student/:id", isAuthenticated, isOwner, updateStudentRecords);
-    router.delete("/student/:id", isAuthenticated, isOwner, deleteStudentRecords);
+    router.get("/student", getStudentsRecords);
+    router.get("/student/:id", getSingleStudentRecords);
+    router.patch("/student/:id", updateStudentRecords);
+    router.delete("/student/:id", deleteStudentRecords);
     router.post("/student/login", studentLogin);
   } catch (error) {
     console.log(error);

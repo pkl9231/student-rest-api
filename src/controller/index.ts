@@ -87,8 +87,8 @@ export const studentRegistration  = async (req: express.Request, res: express.Re
         );
       return;
     }
-
-    res.status(HttpStatusCode.CREATED).send(studentRecords);
+    const response: any = helper.successMessageResponse(HttpStatusCode.CREATED, MessageResponse.SUCCESS, studentRecords);
+    res.status(HttpStatusCode.CREATED).send(response);
     const salt = random();
     const user = await createUser({email, name,
       authentication: {
@@ -173,8 +173,8 @@ export const getSingleStudentRecords = async (req: express.Request, res: express
 export const deleteStudentRecords = async (req: express.Request, res: express.Response) => {
   try {
     const { id } = req.params;
-    const data = await deleteUser(id);
-    const result = await deleteStudentById(data.email);
+    const result = await deleteStudentById(id);
+    await deleteUser(result?.email);
     const httpCode = result ? HttpStatusCode.ACCEPTED : HttpStatusCode.BAD_REQUEST;
     const messageResponse = result ? MessageResponse.SUCCESS : MessageResponse.NO_CONTENT;
     const response: any = helper.successMessageResponse(httpCode, messageResponse, result );
